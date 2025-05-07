@@ -14,21 +14,21 @@ This guide walks through setting up [Coder](https://coder.com/) on a Fedora serv
 
 ## 🧰 Step 1: Install Docker
 
-\`\`\`bash
+```bash
 sudo dnf install -y dnf-plugins-core
 sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
 sudo dnf install -y docker-ce docker-ce-cli containerd.io
 sudo systemctl enable --now docker
-\`\`\`
+```
 
 ---
 
 ## 👤 Step 2: Add User to Docker Group
 
-\`\`\`bash
+```bash
 sudo usermod -aG docker parallels
 newgrp docker
-\`\`\`
+```
 
 Log out and back in (or use `newgrp`) to activate group membership.
 
@@ -36,9 +36,9 @@ Log out and back in (or use `newgrp`) to activate group membership.
 
 ## 📦 Step 3: Install Coder (via official RPM)
 
-\`\`\`bash
+```bash
 curl -fsSL https://coder.com/install.sh | sh
-\`\`\`
+```
 
 This installs the latest Coder binary via RPM and places it at `/usr/bin/coder`.
 
@@ -50,7 +50,7 @@ This installs the latest Coder binary via RPM and places it at `/usr/bin/coder`.
 
 If using `mkcert`:
 
-\`\`\`bash
+```bash
 # Install mkcert
 sudo dnf install -y nss-tools
 curl -L https://github.com/FiloSottile/mkcert/releases/latest/download/mkcert-v1.4.4-linux-amd64 -o mkcert
@@ -61,19 +61,19 @@ mkcert -install
 mkdir -p /home/parallels/certs
 cd /home/parallels/certs
 mkcert coder.local 192.168.1.50
-\`\`\`
+```
 
 ---
 
 ## 🧾 Step 5: Create systemd Service
 
-\`\`\`bash
+```bash
 sudo nano /etc/systemd/system/coder.service
-\`\`\`
+```
 
 Paste the following (adjust paths as needed):
 
-\`\`\`ini
+```ini
 [Unit]
 Description=Coder Server
 After=network.target
@@ -88,37 +88,37 @@ Environment=HOME=/home/parallels
 
 [Install]
 WantedBy=multi-user.target
-\`\`\`
+```
 
 Ensure the certificate files are readable by the `parallels` user:
 
-\`\`\`bash
+```bash
 sudo chown parallels:parallels /home/parallels/certs/*
 chmod 600 /home/parallels/certs/coder.local+1-key.pem
 chmod 644 /home/parallels/certs/coder.local+1.pem
-\`\`\`
+```
 
 ---
 
 ## 🔁 Step 6: Reload systemd and Start Coder
 
-\`\`\`bash
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable coder
 sudo systemctl start coder
-\`\`\`
+```
 
 Check status:
 
-\`\`\`bash
+```bash
 sudo systemctl status coder
-\`\`\`
+```
 
 Tail logs:
 
-\`\`\`bash
+```bash
 journalctl -u coder -f
-\`\`\`
+```
 
 ---
 
@@ -126,15 +126,15 @@ journalctl -u coder -f
 
 From a browser on your host or LAN:
 
-\`\`\`
+```
 https://coder.local:3443
-\`\`\`
+```
 
 If you're using a local domain like `coder.local`, make sure you add an entry to `/etc/hosts` on your host machine:
 
-\`\`\`
+```
 192.168.1.50  coder.local
-\`\`\`
+```
 
 ---
 
@@ -142,12 +142,12 @@ If you're using a local domain like `coder.local`, make sure you add an entry to
 
 To remove the service:
 
-\`\`\`bash
+```bash
 sudo systemctl stop coder
 sudo systemctl disable coder
 sudo rm /etc/systemd/system/coder.service
 sudo systemctl daemon-reload
-\`\`\`
+```
 
 ---
 
