@@ -1,0 +1,14 @@
+[Unit]
+Description=Coder Server
+After=network.target
+
+[Service]
+User=parallels
+WorkingDirectory=/home/parallels
+ExecStart=/usr/bin/coder server --http-address 0.0.0.0:3000 --tls-address 0.0.0.0:3443 --tls-enable --tls-cert-file /home/parallels/certs/coder.local+1.pem --tls-key-file /home/parallels/certs/coder.local+1-key.pem --access-url https://coder.local
+Restart=always
+RestartSec=5
+Environment=HOME=/home/parallels
+
+[Install]
+WantedBy=multi-user.target
