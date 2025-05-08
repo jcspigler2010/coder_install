@@ -138,6 +138,88 @@ If you're using a local domain like `coder.local`, make sure you add an entry to
 
 ---
 
+## Exposing Coder Over HTTPS and Omitting HTTP
+
+By default, Coder listens on both HTTP (port 80) and HTTPS (port 443/3443). To harden the environment and avoid exposure over HTTP:
+
+### Disable HTTP (Port 80) Access
+
+If you're not using port 80 for redirects, you can disable it entirely:
+
+```bash
+sudo firewall-cmd --permanent --remove-service=http
+sudo firewall-cmd --reload
+```
+
+---
+
+### Publishing Coder on a Private HTTPS Port (e.g., 3443)
+
+There are two options to make Coder accessible via HTTPS while ensuring no traffic is allowed on HTTP:
+
+---
+
+### Option A: Use firewalld to Redirect Port 443 → 3443
+
+This silently forwards traffic from port 443 to 3443 at the network layer:
+
+```bash
+sudo firewall-cmd --permanent --add-forward-port=port=443:proto=tcp:toport=3443
+sudo firewall-cmd --reload
+```
+
+> ⚠️ This method does not issue a browser-friendly HTTPS redirect — it only forwards raw TCP.
+
+---
+
+### Option B: Use NGINX as a Secure Reverse Proxy
+
+Install NGINX:
+
+```bash
+sudo dnf install nginx -y   # RHEL-based systems
+# or
+sudo apt install nginx -y   # Debian-based systems
+```
+
+Create `/etc/nginx/conf.d/coder.conf`:
+
+```nginx
+server {
+    listen 80;
+    server_name your.domain.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name your.domain.com;
+
+    ssl_certificate /etc/ssl/certs/your-cert.pem;
+    ssl_certificate_key /etc/ssl/private/your-key.pem;
+
+    location / {
+        proxy_pass https://localhost:3443;
+        proxy_ssl_verify off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+Enable and start NGINX:
+
+```bash
+sudo systemctl enable nginx --now
+```
+
+This setup provides:
+- Automatic redirect from HTTP to HTTPS
+- SSL termination at NGINX
+- Clean, secure routing to Coder on port 3443
+
+
 ## 🧹 Optional Cleanup
 
 To remove the service:
