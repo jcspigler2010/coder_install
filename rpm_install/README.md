@@ -121,8 +121,15 @@ journalctl -u coder -f
 ```
 
 ---
+## Step 7: Open ports 3000 and 3443 in the firewall (for internal access)
+```bash
+sudo firewall-cmd --permanent --add-port=3000/tcp
+sudo firewall-cmd --permanent --add-port=3443/tcp
+sudo firewall-cmd --reload
 
-## 🌐 Step 7: Access Coder
+---
+
+## 🌐 Step 8: Access Coder
 
 From a browser on your host or LAN:
 
